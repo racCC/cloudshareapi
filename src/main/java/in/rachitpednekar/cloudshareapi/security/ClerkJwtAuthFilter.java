@@ -33,6 +33,11 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // FIX CORS PREFLIGHT - ADD THIS LINE ↓
+        if ("OPTIONS".equals(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if ("OPTIONS".equals(request.getMethod())) {
             filterChain.doFilter(request, response);
