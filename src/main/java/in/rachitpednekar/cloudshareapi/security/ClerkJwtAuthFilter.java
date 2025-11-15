@@ -33,7 +33,8 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // FIX CORS PREFLIGHT - ADD THIS LINE ↓
+
+        // Skip authentication for OPTIONS requests (CORS preflight) - ADD THIS LINE!
         if ("OPTIONS".equals(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
@@ -52,17 +53,26 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        System.out.println("=== JWT AUTH DEBUG ===");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Request Method: " + request.getMethod());
+
         String authHeader = request.getHeader("Authorization");
+        System.out.println("Auth Header: " + (authHeader != null ? "Present" : "Missing"));
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("ERROR: Missing or invalid Authorization header");
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header missing/invalid");
             return;
         }
 
         try {
             String token = authHeader.substring(7);
+            System.out.println("Token length: " + token.length());
+
             String[] chunks = token.split("\\.");
             if (chunks.length < 3) {
+                System.out.println("ERROR: Invalid JWT format");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token format");
                 return;
             }
@@ -72,11 +82,13 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
             JsonNode headerNode = mapper.readTree(headerJson);
 
             if (!headerNode.has("kid")) {
+                System.out.println("TOKEN ERROR: Missing kid");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token header is missing kid");
                 return;
             }
 
             String kid = headerNode.get("kid").asText();
+            System.out.println("Token kid: " + kid);
 
             PublicKey publicKey = jwksProvider.getPublicKey(kid);
 
@@ -90,15 +102,19 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
                     .getBody();
 
             String clerkId = claims.getSubject();
+            System.out.println("JWT validation successful for user: " + clerkId);
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(clerkId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request, response);
         } catch (Exception e) {
+            System.out.println("JWT validation failed: " + e.getMessage());
+            e.printStackTrace();
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: "+e.getMessage());
             return;
         }
+    }
 
     }
-}
+
