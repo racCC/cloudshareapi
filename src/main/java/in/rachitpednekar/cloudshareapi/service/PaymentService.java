@@ -44,8 +44,8 @@ public class PaymentService {
             // Build Stripe Checkout Session params
             SessionCreateParams params = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl("http://localhost:5173/subscription?session_id={CHECKOUT_SESSION_ID}")
-                    .setCancelUrl("http://localhost:5173/subscription")
+                    .setSuccessUrl("https://getcloudshare.vercel.app/subscription?session_id={CHECKOUT_SESSION_ID}")
+                    .setCancelUrl("https://getcloudshare.vercel.app/subscription")
                     .setCustomerEmail(currentProfile.getEmail())
                     .addLineItem(
                             SessionCreateParams.LineItem.builder()
