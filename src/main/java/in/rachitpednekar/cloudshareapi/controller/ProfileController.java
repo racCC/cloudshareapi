@@ -19,7 +19,7 @@ public class ProfileController {
                 HttpStatus.OK:HttpStatus.CREATED;
         ProfileDTO savedProfile=profileService.createProfile(profileDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedProfile);
+        return ResponseEntity.status(status).body(savedProfile);
 
     }
 }

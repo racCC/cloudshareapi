@@ -34,11 +34,7 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        // Skip authentication for OPTIONS requests (CORS preflight) - ADD THIS LINE!
-        if ("OPTIONS".equals(request.getMethod())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+
 
         if ("OPTIONS".equals(request.getMethod())) {
             filterChain.doFilter(request, response);
@@ -111,10 +107,9 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             System.out.println("JWT validation failed: " + e.getMessage());
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: "+e.getMessage());
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: " + e.getMessage());
             return;
         }
     }
-
-    }
+}
 
